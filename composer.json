@@ -1,0 +1,13 @@
+{
+    "name": "brazilpoanorth/referral_manager",
+    "require": {
+        "rmccue/requests": "^2.0",
+        "netflie/whatsapp-cloud-api": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {"BrazilPOANorth\\ReferralManager\\": "./src"}
+    },
+    "config": {
+        "vendor-dir": "lib"
+    }
+}
