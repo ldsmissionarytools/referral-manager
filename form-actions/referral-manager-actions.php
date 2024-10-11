@@ -91,7 +91,7 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 
 		//get ad information
 		if ($settings['include_ad_information'] === 'yes') {
-			$ad_information = json_decode(WpOrg\Requests\Requests::get($ad_information_url)->body, true)['description'];
+			$ad_information = json_decode(WpOrg\Requests\Requests::get($ad_information_url . '?' . http_build_query(['utm' => $utm]))->body, true)['description'];
 		} else {
 			$ad_information = '';
 		}
