@@ -172,7 +172,7 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 				],
 				[
 					'type' => 'text',
-					'text' => $ad_information['url'],
+					'text' => $settings['include_ad_information'] === 'yes' ? $ad_information['url'] : 'Sem Link'
 				],
 			];
 
