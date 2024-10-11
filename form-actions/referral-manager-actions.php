@@ -50,7 +50,7 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 	public function run( $record, $ajax_handler ) {
 		
 		$settings = $record->get( 'form_settings' );
-		$submission_date = date('d/m/Y h:i:s');
+		$submission_date = (new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo')))->format('d/m/Y h:i:s');
 
 		// Get submitted form data.
 		$raw_fields = $record->get( 'fields' );
@@ -73,7 +73,7 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 		$referral_type = (int) $settings['referral_manager_referral_type'];
 
 		$address = $road . ' ' . $housenumber . ', ' . $city . ', ' . $state . ' ' . $zip;
-		$phone = preg_replace("/[^0-9]/", "", $phone);
+		$phone = '55' . preg_replace("/[^0-9]/", "", $phone);
 
 		$whatsapp_enabled = $settings['enable_whatsapp'];
 		$webhook_enabled = $settings['enable_webhook'];
@@ -91,12 +91,16 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 
 		//get ad information
 		if ($settings['include_ad_information'] === 'yes') {
-			$ad_information = json_decode(WpOrg\Requests\Requests::get($ad_information_url)->body, true)['description'];
+			$ad_information = json_decode(WpOrg\Requests\Requests::get($ad_information_url . '?' . http_build_query(['utm' => $utm]))->body, true);
 		} else {
-			$ad_information = '';
+			$ad_information = [
+				'name' => '',
+				'description' => '',
+				'url' => ''
+			];
 		}
 
-		$referral_manager->create_and_send_reference($name, '', $address, $phone, $email, $referral_type, $ad_information);
+		$referral_manager->create_and_send_reference($name, '', $address, $phone, $email, $referral_type, $ad_information['description']);
 
 		$area_info = $referral_manager->get_area_for_address($address)['proselytingAreas'][0];
 		$area_name = $area_info['name'];
@@ -114,8 +118,8 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 
 		//send Whatsapp messages
 		if ($whatsapp_enabled === 'yes') {
-			$whatsapp_phone_number_id = $fields['whatsapp_phone_number_id'];
-			$whatsapp_access_token = $fields['whatsapp_access_token'];
+			$whatsapp_phone_number_id = $settings['whatsapp_phone_number_id'];
+			$whatsapp_access_token = $settings['whatsapp_access_token'];
 
 			//create cloud api client
 			$whatsapp_cloud_api = new WhatsAppCloudApi([
@@ -160,7 +164,7 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 				],
 				[
 					'type' => 'text',
-					'text' => $number,
+					'text' => $phone,
 				],
 				[
 					'type' => 'text',
@@ -172,7 +176,7 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 				],
 				[
 					'type' => 'text',
-					'text' => $ad_information['url'],
+					'text' => $ad_information['url'] == '' ? 'Sem Link' : $ad_information['url']
 				],
 			];
 
@@ -209,7 +213,6 @@ class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\
 				'missionaryPhone' => $missionary_phonenumbers,
 				'time' => $submission_date
 			];
-
 			WpOrg\Requests\Requests::post($referral_manager_webhook . '?' . http_build_query($data));
 
 		}
