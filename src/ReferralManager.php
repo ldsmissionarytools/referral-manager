@@ -17,9 +17,10 @@ class ReferralManager {
     private string $sec_email;
     private int $mission_id;
     private $media_sec;
+    private int $auth_expire;
     
 
-    function __construct(string $username, string $password, string $email, int $mission_id) {
+    public function __construct(string $username, string $password, string $email, int $mission_id) {
         $this->session = new Session();
         $this->session->useragent = 'referral-manager';
         $this->username = $username;
@@ -28,7 +29,7 @@ class ReferralManager {
         $this->mission_id = $mission_id;
 
         $this->authenticate();
-        $this->media_sec = $this->get_media_sec_info($email, $mission_id);
+        $this->media_sec = $this->get_media_sec_info();
     }
 
     /**
@@ -58,24 +59,44 @@ class ReferralManager {
         $challenge_resp = json_decode($this->session->post("{$id_url}/idp/idx/challenge/answer", ['Content-Type' => 'application/json'], json_encode(["credentials" => ["passcode" => $this->password], "stateHandle" => $state_handle]))->body, true);
         $this->session->get($challenge_resp["success"]["href"]);
         $access_token = $this->session->cookies["oauth_id_token"];
+        $this->auth_expire = $access_token->attributes['max-age'];
         $this->session->cookies->offsetSet("owp", $access_token);
     }
 
     /**
-     * Returns the information for the requested media secretary based on the missionary email information
+     * Returns true if the auth cookie has expired
+     */
+    public function auth_expired() {
+        return time() > $this->auth_expire;
+    }
+
+    /**
+     * Returns the time in which the auth token expires
+     */
+    public function get_auth_expire() {
+        return $this->auth_expire;
+    }
+
+    /**
+     * Returns the information for the requested media secretary
      * 
      * @access private
      * @param string $email
      * @param int $mission_id
      */
-    private function get_media_sec_info(string $email, int $mission_id) {
-        $mission = json_decode($this->session->get($this->host('referralmanager') . "/services/mission/{$mission_id}")->body, true)['mission'];
+    private function get_media_sec_info() {
+        $mission = $this->get_mission_info();
         foreach ($mission['leadership'] as $leader) {
-            if ($leader['missionary']['emailAddress'] == $email) {
+            if ($leader['missionary']['emailAddress'] == $this->sec_email) {
                 return $leader['missionary'];
             }
         }
         return NULL;
+    }
+
+    public function get_mission_info() {
+        $mission = json_decode($this->session->get($this->host('referralmanager') . "/services/mission/{$this->mission_id}")->body, true)['mission'];
+        return $mission;
     }
 
     /**
@@ -86,6 +107,9 @@ class ReferralManager {
      */
     public function get_area_for_address(string $address) {
         $designated_area = json_decode($this->session->get($this->host('referralmanager') . "/services/mission/assignment?address={$address}&langCd=por")->body, true);
+        if ($designated_area['bestProsAreaId'] == NULL) {
+            $designated_area = $this->get_area_for_location($designated_area['coordinates']);
+        }
         return $designated_area;
     }
     
@@ -95,7 +119,7 @@ class ReferralManager {
      * @access public
      * @param string $coords
      */
-    public function get_area_for_location(array $coords) {
+    private function get_area_for_location(array $coords) {
         $designated_area = json_decode($this->session->get($this->host('referralmanager') . "/services/mission/assignment?coordinates={$coords[0]},{$coords[1]}&langCd=por")->body, true);
         return $designated_area;
     }
@@ -131,7 +155,7 @@ class ReferralManager {
                 "referral" => [
                     "personGuid" => NULL,
                     "referralNote" => $referral_note, # referal note to be included with the reference
-                    "createDate" => time() * 1000,
+                    "createDate" => (time() + 60) * 1000,
                     "sentToLocalPersonGuid" => $this->media_sec["clientGuid"],
                     "sentToLocalAppId" => NULL,
                     "referralStatus" => "UNCONTACTED" # the reference has been uncontacted
@@ -221,8 +245,8 @@ class ReferralManager {
                 "needsPrivacyNotice" => True
             ]
         ];
-        $resp = $this->session->post($this->host("referralmanager") . "/services/referrals/sendtolocal", ['Content-Type' => 'application/json'], json_encode($data));
-        return $resp;
+        $this->session->post($this->host("referralmanager") . "/services/referrals/sendtolocal", ['Content-Type' => 'application/json'], json_encode($data));
+        return static::format_area_info($designated_area);
     }
 
     public function assign_referrals() {
@@ -231,10 +255,7 @@ class ReferralManager {
             try {
                 $designated_area = $this->get_area_for_address($person['address']);
                 if ($designated_area['bestProsAreaId'] == NULL) {
-                    $designated_area = $this->get_area_for_location($designated_area['coordinates']);
-                    if ($designated_area['bestProsAreaId'] == NULL) {
-                        continue;
-                    }
+                    continue;
                 }
                 $household = json_decode($this->session->get($this->host('referralmanager') . '/services/households/' . $person['householdGuid'])->body, true);
                 $household['people'][0]['prosAreaId'] = $designated_area['bestProsAreaId'];
@@ -330,5 +351,26 @@ class ReferralManager {
      */
     public function get_household(int $guid) {
         return json_decode($this->session->get($this->host('referralmanager') . "/services/households/{$guid}")->body, true);
+    }
+
+    public static function format_area_info($area_info) {
+        $area_info = $area_info['proselytingAreas'][0];
+        $missionaries = $area_info['missionaries'];
+        foreach ($missionaries as &$missionary) {
+            $missionary = ucfirst(strtolower($missionary['missionaryType'])) . ' ' . $missionary['lastName'];
+        }
+
+        $missionary_phonenumbers = $area_info['areaNumbers'];
+
+        foreach ($missionary_phonenumbers as &$number) {
+            $number = preg_replace("/[^0-9]/", "", $number);
+        }
+
+        //return area info
+        return array(
+            'name' => $area_info['name'],
+            'missionaries' => $missionaries,
+            'phones' => $missionary_phonenumbers
+        );
     }
 }
