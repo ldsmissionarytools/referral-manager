@@ -10,7 +10,7 @@
  * @wordpress-plugin
  * Plugin Name:       Referral Manager
  * Description:       Adds additional submit actions to Elementor forms to integrate with various mission tools
- * Version:           0.2.0
+ * Version:           0.2.1
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Corban Thompson
@@ -94,9 +94,15 @@ function referral_manager_settings_init() {
 		'default' => array(
 			'app_id' => '',
 			'app_secret' => '',
-			'whatsapp_phone_number_id' => '',
 			'access_token' => '',
 			'hub_verify_token' => 'referralmanagerverifytoken'
+		)
+	));
+	register_setting('referral_manager', 'whatsapp_settings', array(
+		'type' => 'array',
+		'default' => array(
+			'access_token' => '',
+			'phone_number_id' => ''
 		)
 	));
 	register_setting('referral_manager', 'twilio_settings', array(
@@ -191,18 +197,8 @@ function referral_manager_settings_init() {
 		<input type="password" name="facebook_api_settings[access_token]" value="<?php echo esc_attr( $setting ) ?>">
     	<?php
 	}, 'referral_manager_settings', 'facebook_api_settings_section');
-	
-	//Whatsapp Phone Number ID
-	add_settings_field('referral_manager_whatsapp_phone_id_settings_field', esc_html__('Whatsapp Phone Number ID', 'referral_manager'), function() {
-		// get the value of the setting we've registered with register_setting()
-		$setting = get_option('facebook_api_settings')['whatsapp_phone_number_id'];
-		// output the field
-		?>
-		<input type="text" name="facebook_api_settings[whatsapp_phone_number_id]" value="<?php echo esc_attr( $setting ) ?>">
-    	<?php
-	}, 'referral_manager_settings', 'facebook_api_settings_section');
 
-	//Whatsapp Phone Number ID
+	//Facebook verify token
 	add_settings_field('referral_manager_facebook_hub_verify_token_field', esc_html__('Facebook Webhook Hub Verify Token', 'referral_manager'), function() {
 		// get the value of the setting we've registered with register_setting()
 		$setting = get_option('facebook_api_settings')['hub_verify_token'];
@@ -212,6 +208,28 @@ function referral_manager_settings_init() {
     	<?php
 	}, 'referral_manager_settings', 'facebook_api_settings_section');
 
+	//Whatsapp settings section
+	add_settings_section('whatsapp_settings_section', esc_html__('Whatsapp Settings', 'referral_manager'), null, 'referral_manager_settings');
+
+	//Whatsapp Access Token
+	add_settings_field('referral_manager_whatsapp_access_token_settings_field', esc_html__('Whatsapp Access Token', 'referral_manager'), function() {
+		// get the value of the setting we've registered with register_setting()
+		$setting = get_option('whatsapp_settings')['access_token'];
+		// output the field
+		?>
+		<input type="text" name="whatsapp_settings[access_token]" value="<?php echo esc_attr( $setting ) ?>">
+		<?php
+	}, 'referral_manager_settings', 'whatsapp_settings_section');
+
+	//Whatsapp Phone Number ID
+	add_settings_field('referral_manager_whatsapp_phone_number_id_settings_field', esc_html__('Whatsapp Phone Number ID', 'referral_manager'), function() {
+		// get the value of the setting we've registered with register_setting()
+		$setting = get_option('whatsapp_settings')['phone_number_id'];
+		// output the field
+		?>
+		<input type="text" name="whatsapp_settings[phone_number_id]" value="<?php echo esc_attr( $setting ) ?>">
+		<?php
+	}, 'referral_manager_settings', 'whatsapp_settings_section');
 
 	//Twilio settings section
 	add_settings_section('twilio_settings_section', esc_html__('Twilio Settings', 'referral_manager'), null, 'referral_manager_settings');
@@ -415,10 +433,10 @@ function referral_manager_handle_referral($referral_info, $from_facebook) {
 add_action( 'referral_manager_handle_referral', 'referral_manager_handle_referral', 10, 2 );
 
 function send_whatsapp_messages($referral_info, $area_info, $ad_info) {
-	//facebook
-	$facebook_api_settings = get_option('facebook_api_settings');
-	$whatsapp_phone_number_id = $facebook_api_settings['whatsapp_phone_number_id'];
-	$whatsapp_access_token = $facebook_api_settings['access_token'];
+	//whatsapp
+	$whatsapp_settings = get_option('whatsapp_settings');
+	$whatsapp_phone_number_id = $whatsapp_settings['phone_number_id'];
+	$whatsapp_access_token = $whatsapp_settings['access_token'];
 	//twilio
 	$twilio_settings = get_option('twilio_settings');
 	$twilio_account_sid = $twilio_settings['account_sid'];
@@ -562,6 +580,7 @@ function output_to_webhook($referral_info, $area_info, $ad_info, $from_facebook)
 		'phone' => $referral_info['phone'],
 		'address' => $referral_info['address'],
 		'utm' => $ad_info['utm'],
+		'description' => $ad_info['description'],
 		'area' => $area_name,
 		'missionaryPhone' => $missionary_phonenumber,
 		'time' => $referral_info['submission_date'],
@@ -570,8 +589,8 @@ function output_to_webhook($referral_info, $area_info, $ad_info, $from_facebook)
 	WpOrg\Requests\Requests::post($webhook_url . '?' . http_build_query($data));
 }
 
-add_action( 'whatsapp_message_and_webhook', 'send_whatsapp_messages', 9, 3 );
-add_action( 'whatsapp_message_and_webhook', 'output_to_webhook', 10, 4 );
+add_action( 'whatsapp_message_and_webhook', 'send_whatsapp_messages', 10, 3 );
+add_action( 'whatsapp_message_and_webhook', 'output_to_webhook', 9, 4 );
 
 function assign_undesignated_referrals() {
 	$referral_manager = create_referral_manager();
