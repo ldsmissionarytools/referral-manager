@@ -70,6 +70,8 @@ jobs:
             
             - name: Create plugin zip
               run: |
+                    mkdir ${{ steps.plugin_info.outputs.plugin_slug }}
+                    mv * ${{ steps.plugin_info.outputs.plugin_slug }}/
                     mkdir -p build
                     # Exclude development files
                     zip -r "build/${{ steps.plugin_info.outputs.plugin_slug }}.zip" . \
@@ -88,8 +90,9 @@ jobs:
             
             - name: Generate update JSON
               run: |
+                    mkdir -p updater
                     # Create JSON file for WordPress update API
-                    cat > build/update-info.json << EOL
+                    cat > updater/info.json << EOL
                     {
                         "name": "${{ steps.plugin_info.outputs.plugin_name }}",
                         "slug": "${{ steps.plugin_info.outputs.plugin_slug }}",
@@ -103,6 +106,7 @@ jobs:
                         "requires_php": "7.2",
                         "sections": {
                             "description": "${{ steps.plugin_info.outputs.description }}",
+                            "installation": "See installation instructions on the plugin page.",
                             "changelog": "See release notes: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.plugin_info.outputs.version }}"
                         }
                     }
@@ -117,7 +121,7 @@ jobs:
             - name: Upload Github Pages Artifact
               uses: actions/upload-pages-artifact@v3
               with:
-                path: build/update-info.json
+                path: updater/info.json
             
             - name: Deploy to GitHub Pages
               id: deployment

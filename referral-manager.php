@@ -21,6 +21,7 @@
  * Update URI:        https://example.com/my-plugin/
  * Requires Plugins:  elementor, action-scheduler
  */
+plugin_basename( __DIR__ )
 
 require_once(plugin_dir_path(__FILE__) . 'lib/autoload.php');
 require_once(plugin_dir_path(__FILE__) . 'src/ReferralManager.php');
@@ -626,4 +627,13 @@ function create_referral_manager() {
 	$referral_manager = new ReferralManager($church_account_username, $church_account_password, $media_sec_email, $mission_id);
 
 	return $referral_manager;
+}
+
+if ( is_admin() ) {
+    if( ! function_exists( 'get_plugin_data' ) ) {
+        require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+    }
+    $plugin_data = get_plugin_data( __FILE__, false, false );
+
+	new Updater(plugin_basename( __DIR__ ), $plugin_data['Version']);
 }
