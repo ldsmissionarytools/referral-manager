@@ -1,0 +1,159 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Package Name\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-03-21 14:01-0300\n"
+"PO-Revision-Date: 2025-03-21 14:16-0300\n"
+"Last-Translator: Bruno da Cunha Felipe <bruno.dc.felipe@gmail.com>\n"
+"Language-Team: \n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.5\n"
+
+#: referral-manager.php:63
+msgid "Testando tradução"
+msgstr "Tradução Funcionando"
+
+#: referral-manager.php:81
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: referral-manager.php:85
+msgid "Settings"
+msgstr "Configurações"
+
+#: referral-manager.php:136
+msgid "Referral Manager Settings"
+msgstr "Configurações do Gerenciador de Referências"
+
+#: referral-manager.php:139
+msgid "Username"
+msgstr "Usuário"
+
+#: referral-manager.php:149
+msgid "Password"
+msgstr "Senha"
+
+#: referral-manager.php:159
+msgid "Media Secretary Missionary Email"
+msgstr "Email do Secretário de Mídia da Missão"
+
+#: referral-manager.php:169
+msgid "Mission ID Number"
+msgstr "Número de identificação da missão (ID Number)"
+
+#: referral-manager.php:180
+msgid "Facebook API Settings"
+msgstr "Configurações da API do Facebook"
+
+#: referral-manager.php:183
+msgid "Facebook API App ID"
+msgstr "ID do aplicativo da API do Facebook"
+
+#: referral-manager.php:193
+msgid "Facebook App Secret"
+msgstr "Secret Key do aplicativo do Facebook"
+
+#: referral-manager.php:203
+msgid "Facebook Access Token"
+msgstr "Token de Acesso do Facebook"
+
+#: referral-manager.php:213
+msgid "Facebook Webhook Hub Verify Token"
+msgstr "Token de verificação do Facebook Webhook Hub"
+
+#: referral-manager.php:223
+msgid "Whatsapp Settings"
+msgstr "Configurações do Whatsapp"
+
+#: referral-manager.php:226
+msgid "Whatsapp Access Token"
+msgstr "Token de Acesso do Whatsapp"
+
+#: referral-manager.php:236
+msgid "Whatsapp Phone Number ID"
+msgstr "Número de telefone do Whatsapp ID"
+
+#: referral-manager.php:246
+msgid "Twilio Settings"
+msgstr "Configurações do Twilio"
+
+#: referral-manager.php:249
+msgid "Twilio Account SID"
+msgstr "SID da conta Twilio"
+
+#: referral-manager.php:259
+msgid "Twilio Auth Token"
+msgstr "Token de autenticação Twilio"
+
+#: referral-manager.php:269
+msgid "Twilio Phone Number"
+msgstr "Número de telefone Twilio"
+
+#: referral-manager.php:280
+msgid "URL Settings"
+msgstr "Configurações de URL"
+
+#: referral-manager.php:283
+msgid "Ad Info URL"
+msgstr "URL de informações do anúncio"
+
+#: referral-manager.php:293
+msgid "Webhook URL"
+msgstr "Webhook URL"
+
+#: admin/settings.php:20
+msgid "Save Settings"
+msgstr "Salvar Configurações"
+
+#: form-actions/referral-manager-actions.php:37
+msgid "Referral Manager Actions"
+msgstr "Ações do gerente de referência"
+
+#: form-actions/referral-manager-actions.php:105
+msgid "Referral Information"
+msgstr "Informações de referência"
+
+#: form-actions/referral-manager-actions.php:114
+msgid "Name Field ID"
+msgstr "ID do campo nome"
+
+#: form-actions/referral-manager-actions.php:122
+msgid "Phone Field ID"
+msgstr "ID do campo de telefone"
+
+#: form-actions/referral-manager-actions.php:130
+msgid "Email Field ID"
+msgstr "ID do campo de e-mail"
+
+#: form-actions/referral-manager-actions.php:138
+msgid "ZIP Code Field ID"
+msgstr "ID do campo cep"
+
+#: form-actions/referral-manager-actions.php:146
+msgid "Road Field ID"
+msgstr "ID do campo rodoviário"
+
+#: form-actions/referral-manager-actions.php:154
+msgid "House Number Field ID"
+msgstr "ID do campo do número da casa"
+
+#: form-actions/referral-manager-actions.php:170
+msgid "City Field ID"
+msgstr "ID do campo da cidade"
+
+#: form-actions/referral-manager-actions.php:186
+msgid "UTM Field ID"
+msgstr "ID do campo UTM"
+
+#: form-actions/referral-manager-actions.php:194
+msgid "Referral Type"
+msgstr "Tipo de referência"
