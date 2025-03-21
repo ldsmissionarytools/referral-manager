@@ -626,4 +626,3 @@ function create_referral_manager() {
 	$referral_manager = new ReferralManager($church_account_username, $church_account_password, $media_sec_email, $mission_id);
 
 	return $referral_manager;
-}
