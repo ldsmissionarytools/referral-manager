@@ -4,7 +4,7 @@
  *
  * @package           ReferralManager
  * @author            Corban Thompson
- * @copyright         2024 Brazil Porto Alegre North Mission
+ * @copyright         2025 Corban Thompson
  * @license           GPL-2.0-or-later
  *
  * @wordpress-plugin

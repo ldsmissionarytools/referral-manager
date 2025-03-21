@@ -1,0 +1,124 @@
+name: Build and Release WordPress Plugin
+
+on:
+    push:
+        tags:
+            - 'v*' # Trigger on version tags
+    workflow_dispatch: # Allow manual triggering
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+                
+            - name: Set up PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                    php-version: '7.4'
+                    tools: composer
+                    
+            - name: Install dependencies
+              run: composer install --no-dev --optimize-autoloader
+            
+            - name: Get plugin information
+              id: plugin_info
+              run: |
+                    # Find main plugin file (with plugin header)
+                    PLUGIN_FILE=$(grep -l "Plugin Name:" $(find . -name "*.php" -not -path "./vendor/*" -not -path "./node_modules/*") | head -1)
+                    
+                    # Extract version
+                    if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+                        VERSION=${GITHUB_REF#refs/tags/v}
+                    else
+                        VERSION=$(grep -o "Version: *[0-9]\+\.[0-9]\+\.[0-9]\+" "$PLUGIN_FILE" | sed 's/Version: *//')
+                    fi
+                    
+                    # Extract plugin slug - default to directory name if not found
+                    PLUGIN_SLUG=$(basename $(pwd))
+                    if grep -q "Text Domain:" "$PLUGIN_FILE"; then
+                        TD_SLUG=$(grep "Text Domain:" "$PLUGIN_FILE" | sed 's/.*Text Domain: *\([^ ]*\).*/\1/')
+                        if [ ! -z "$TD_SLUG" ]; then
+                            PLUGIN_SLUG=$TD_SLUG
+                        fi
+                    fi
+                    
+                    # Extract plugin name
+                    PLUGIN_NAME=$(grep "Plugin Name:" "$PLUGIN_FILE" | sed 's/.*Plugin Name: *\(.*\)/\1/')
+                    
+                    # Extract author and author URI
+                    AUTHOR=$(grep "Author:" "$PLUGIN_FILE" | sed 's/.*Author: *\(.*\)/\1/')
+                    AUTHOR_URI=$(grep "Author URI:" "$PLUGIN_FILE" | sed 's/.*Author URI: *\(.*\)/\1/')
+                    
+                    # Extract description
+                    DESCRIPTION=$(grep "Description:" -A 3 "$PLUGIN_FILE" | tail -n +2 | tr '\n' ' ' | sed 's/^ *//' | sed 's/ *$//')
+                    
+                    # Set current date
+                    LAST_UPDATED=$(date +'%Y-%m-%d %H:%M:%S')
+                    
+                    # Set outputs
+                    echo "plugin_file=$PLUGIN_FILE" >> $GITHUB_OUTPUT
+                    echo "version=$VERSION" >> $GITHUB_OUTPUT
+                    echo "plugin_slug=$PLUGIN_SLUG" >> $GITHUB_OUTPUT
+                    echo "plugin_name=$PLUGIN_NAME" >> $GITHUB_OUTPUT
+                    echo "author=$AUTHOR" >> $GITHUB_OUTPUT
+                    echo "author_profile=$AUTHOR_URI" >> $GITHUB_OUTPUT
+                    echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+                    echo "last_updated=$LAST_UPDATED" >> $GITHUB_OUTPUT
+            
+            - name: Create plugin zip
+              run: |
+                    mkdir -p build
+                    # Exclude development files
+                    zip -r "build/${{ steps.plugin_info.outputs.plugin_slug }}.zip" . \
+                        -x "*.git*" \
+                        -x "*node_modules*" \
+                        -x "*.github*" \
+                        -x "*tests*" \
+                        -x "*build*" \
+                        -x "*.gitignore" \
+                        -x "*phpunit*" \
+                        -x "*composer.json" \
+                        -x "*composer.lock" \
+                        -x "*package.json" \
+                        -x "*package-lock.json" \
+                        -x "*webpack.config.js"
+            
+            - name: Generate update JSON
+              run: |
+                    # Create JSON file for WordPress update API
+                    cat > build/update-info.json << EOL
+                    {
+                        "name": "${{ steps.plugin_info.outputs.plugin_name }}",
+                        "slug": "${{ steps.plugin_info.outputs.plugin_slug }}",
+                        "version": "${{ steps.plugin_info.outputs.version }}",
+                        "tested": "6.3",
+                        "requires": "5.0",
+                        "author": "${{ steps.plugin_info.outputs.author }}",
+                        "author_profile": "${{ steps.plugin_info.outputs.author_profile }}",
+                        "download_url": "https://github.com/${{ github.repository }}/releases/download/v${{ steps.plugin_info.outputs.version }}/${{ steps.plugin_info.outputs.plugin_slug }}.zip",
+                        "last_updated": "${{ steps.plugin_info.outputs.last_updated }}",
+                        "requires_php": "7.2",
+                        "sections": {
+                            "description": "${{ steps.plugin_info.outputs.description }}",
+                            "changelog": "See release notes: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.plugin_info.outputs.version }}"
+                        }
+                    }
+                    EOL
+            
+            - name: Release
+              uses: softprops/action-gh-release@v2
+              if: startsWith(github.ref, 'refs/tags/')
+              with:
+                files: build/${{ steps.plugin_info.outputs.plugin_slug }}.zip
+            
+            - name: Upload Github Pages Artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                path: build/update-info.json
+            
+            - name: Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
