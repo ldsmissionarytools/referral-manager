@@ -70,8 +70,6 @@ jobs:
             
             - name: Create plugin zip
               run: |
-                    mkdir ${{ steps.plugin_info.outputs.plugin_slug }}
-                    mv * ${{ steps.plugin_info.outputs.plugin_slug }}/
                     mkdir -p build
                     # Exclude development files
                     zip -r "build/${{ steps.plugin_info.outputs.plugin_slug }}.zip" . \
