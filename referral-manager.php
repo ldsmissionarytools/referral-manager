@@ -54,8 +54,17 @@ function add_new_referral_manager_action( $form_actions_registrar ) {
 
 }
 
-add_action( 'elementor_pro/forms/actions/register', 'add_new_referral_manager_action' );
+function referral_manager_force_load_textdomain() {
+    $locale = determine_locale();
+    $mofile = plugin_dir_path(__FILE__) . "languages/referral-manager-$locale.mo";
 
+    if (file_exists($mofile)) {
+        load_textdomain('referral_manager', $mofile);
+    }
+}
+add_action('plugins_loaded', 'referral_manager_force_load_textdomain');
+
+add_action( 'elementor_pro/forms/actions/register', 'add_new_referral_manager_action' );
 
 function referral_manager_pages() {
     add_menu_page(
