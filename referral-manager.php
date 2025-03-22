@@ -21,13 +21,13 @@
  * Update URI:        https://example.com/my-plugin/
  * Requires Plugins:  elementor, action-scheduler
  */
-plugin_basename( __DIR__ )
 
 require_once(plugin_dir_path(__FILE__) . 'lib/autoload.php');
 require_once(plugin_dir_path(__FILE__) . 'src/ReferralManager.php');
+require_once(plugin_dir_path(__FILE__) . 'src/Updater.php');
 
-use BrazilPOANorth\ReferralManager\ReferralManager;
-use BrazilPOANorth\ReferralManager\ReferenceType;
+use ReferralManager\ReferralManager;
+use Referralmanager\Updater;
 use Netflie\WhatsAppCloudApi\WhatsAppCloudApi;
 use Netflie\WhatsAppCloudApi\Message\Template\Component;
 use FacebookAds\Api;
@@ -629,6 +629,7 @@ function create_referral_manager() {
 	return $referral_manager;
 }
 
+// Registers updater
 if ( is_admin() ) {
     if( ! function_exists( 'get_plugin_data' ) ) {
         require_once( ABSPATH . 'wp-admin/includes/plugin.php' );

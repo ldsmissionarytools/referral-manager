@@ -1,5 +1,7 @@
 <?php
 
+namespace ReferralManager;
+
 class Updater {
 
     private $plugin_slug;
