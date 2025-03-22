@@ -4,10 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Netflie\WhatsAppCloudApi\WhatsAppCloudApi;
-use Netflie\WhatsAppCloudApi\Message\Template\Component;
-use BrazilPOANorth\ReferralManager\ReferralManager;
-use BrazilPOANorth\ReferralManager\ReferenceType;
+use ReferralManager\ReferenceType;
 
 class Referral_Manager_Actions_After_Submit extends \ElementorPro\Modules\Forms\Classes\Action_Base {
 
