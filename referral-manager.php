@@ -10,7 +10,7 @@
  * @wordpress-plugin
  * Plugin Name:       Referral Manager
  * Description:       Adds additional submit actions to Elementor forms to integrate with various mission tools
- * Version:           0.2.1
+ * Version:           0.2.2
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Corban Thompson
