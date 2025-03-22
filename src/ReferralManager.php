@@ -1,5 +1,6 @@
 <?php
-namespace BrazilPOANorth\ReferralManager;
+
+namespace ReferralManager;
 
 use WpOrg\Requests\Session;
 use WpOrg\Requests\Cookies;

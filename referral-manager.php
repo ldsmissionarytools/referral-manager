@@ -10,7 +10,7 @@
  * @wordpress-plugin
  * Plugin Name:       Referral Manager
  * Description:       Adds additional submit actions to Elementor forms to integrate with various mission tools
- * Version:           0.2.1
+ * Version:           0.2.2
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Corban Thompson
@@ -24,9 +24,10 @@
 
 require_once(plugin_dir_path(__FILE__) . 'lib/autoload.php');
 require_once(plugin_dir_path(__FILE__) . 'src/ReferralManager.php');
+require_once(plugin_dir_path(__FILE__) . 'src/Updater.php');
 
-use BrazilPOANorth\ReferralManager\ReferralManager;
-use BrazilPOANorth\ReferralManager\ReferenceType;
+use ReferralManager\ReferralManager;
+use Referralmanager\Updater;
 use Netflie\WhatsAppCloudApi\WhatsAppCloudApi;
 use Netflie\WhatsAppCloudApi\Message\Template\Component;
 use FacebookAds\Api;
@@ -626,4 +627,14 @@ function create_referral_manager() {
 	$referral_manager = new ReferralManager($church_account_username, $church_account_password, $media_sec_email, $mission_id);
 
 	return $referral_manager;
+}
+
+// Registers updater
+if ( is_admin() ) {
+    if( ! function_exists( 'get_plugin_data' ) ) {
+        require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+    }
+    $plugin_data = get_plugin_data( __FILE__, false, false );
+
+	new Updater(plugin_basename( __DIR__ ), $plugin_data['Version']);
 }
